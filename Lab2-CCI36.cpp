@@ -12,7 +12,7 @@ int _tmain(int argc, _TCHAR* argv[])
 #include "stdafx.h"
 
 
-
+#include <stdlib.h>
 #include <windows.h>
 #include "graphbase.h"
 #include <stdio.h>
@@ -83,6 +83,35 @@ static COLORREF color_trans_map[] =
 	RGB(255,255,0),//MY_YELLOW,
 	RGB(255,255,255),//MY_WHITE,
 };
+
+typedef struct Vertex{
+	int x;
+	int y;
+
+}Vertex;
+
+typedef struct Edge{
+	Vertex max;
+	Vertex min;
+}Edge;
+
+struct Polygon{
+	int numLados;
+	Vertex* vertices;
+	Edge* arestas;
+		
+};
+
+Polygon *initPolygon(int n){//recebe o número de lados e retorna o poligno
+	Polygon* p = (Polygon*) malloc(sizeof(Polygon));
+	p.numLados = n;
+	p.vertices = malloc(n * sizeof(Vertex));
+	p.arestas = malloc(n * sizeof(Edge));
+	return p;
+
+}
+
+
 /****************************************************************************
 *  Set the X dimension of the current window in pixels.                 *
 ****************************************************************************/
