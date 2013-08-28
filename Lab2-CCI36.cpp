@@ -84,30 +84,38 @@ static COLORREF color_trans_map[] =
 	RGB(255,255,255),//MY_WHITE,
 };
 
-typedef struct Vertex{
+struct Vertex{
 	int x;
 	int y;
 
-}Vertex;
+};
 
-typedef struct Edge{
+struct Edge{
 	Vertex max;
 	Vertex min;
-}Edge;
+};
 
-struct Polygon{
+struct Poligono{
 	int numLados;
-	Vertex* vertices;
-	Edge* arestas;
+	Vertex** vertices;
+	Edge** arestas;
 		
 };
 
-Polygon *initPolygon(int n){//recebe o número de lados e retorna o poligno
-	Polygon* p = (Polygon*) malloc(sizeof(Polygon));
-	p.numLados = n;
-	p.vertices = malloc(n * sizeof(Vertex));
-	p.arestas = malloc(n * sizeof(Edge));
+Poligono *initPoligonogon(int n){//recebe o número de lados e retorna o poligno
+	Poligono* p = (Poligono*) malloc(sizeof(Poligono));
+	p->numLados = n;
+	p->vertices =(Vertex**) malloc(n * sizeof(Vertex));
+	p->arestas =(Edge**) malloc(n * sizeof(Edge));
 	return p;
+
+}
+
+Vertex* GetPoint(Poligono *p, int k) {
+	Vertex* v = (Vertex*) malloc(sizeof(Vertex));
+	v->x = p->vertices[k]->x;
+	v->y = p->vertices[k]->y;
+	return v;
 
 }
 
