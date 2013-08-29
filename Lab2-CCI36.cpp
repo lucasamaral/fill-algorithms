@@ -47,6 +47,7 @@ int key_input=NO_ACTION,mouse_action=NO_ACTION;
 int mouse_x, mouse_y;
 static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 
+HMENU menu,menu_draw, menu_color;
 
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
@@ -162,8 +163,6 @@ void DrawPixel(int x, int y)
 *                             Menu Creation                                 *
 ****************************************************************************/
 
-HMENU menu,menu_draw, menu_color;
-
 void MenuBar()
 {
 	HMENU menu=CreateMenu();
@@ -222,7 +221,7 @@ void MenuBar()
 
 
 wchar_t wind_class[]=L"Window Application";
-wchar_t wind_name[]= L"Lab1 CCI36     ";
+wchar_t wind_name[]= L"Lab2 CCI36";
 void InitGraphics()
 {
 
@@ -241,7 +240,7 @@ void InitGraphics()
 	wc.hIcon = NULL;
 	wc.lpszMenuName = NULL;						// menu, if any
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH); // background color
-	wc.style = CS_HREDRAW|CS_VREDRAW;		// window style
+	wc.style = CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS ;		// window style
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 
