@@ -119,6 +119,56 @@ Vertex* GetPoint(Poligono *p, int k) {
 
 }
 
+void PolyInsert(int x1,int y1,int x2,int y2)
+{     // insert line segment in edge struct, if not horizontal
+     if (y1!=y2)
+	 {  
+		 int YM=Max(y1,y2),J1=list.n+1;
+	     while (J1!=1 &&  list.edge[J1-1].Ymax<YM)
+		 {
+			 list.edge[J1]=list.edge[J1-1];
+			 J1--;
+		  }
+
+		 list.edge[J1].Ymax=YM;
+		 list.edge[J1].dx = -1*(real)(x2-x1)/(y2-y1);
+		 if (y1>y2)
+		 {
+	       list.edge[J1].Ymin=y2;
+		   list.edge[J1].Xinter=(real)x1;
+		 }
+		 else {
+		   list.edge[J1].Ymin=y1;
+		   list.edge[J1].Xinter=(real)x2;
+		 }
+
+		 list.n++;
+	 }
+
+}
+
+void LoadPolygon(Poligono p, inout list, int out, int num_Edges)
+{
+	int x1,x2,y1,y2,k=1;
+	
+	list.n = 0;
+	GetPoint(polygon, k,x1,y1);
+	num_Edges = 0;
+
+	for ( ; k <= polygon.n ; k++ ) 
+	{
+		GetPoint(polygon, k%polygon.n+1,x2,y2);
+		if (y1==y2) x1 = x2 ;
+		else 
+		{
+			PolyInsert(list, x1,y1,x2,y2);
+			num_Edges+=1;
+			x1=x2;
+			y1=y2;
+		}
+	}
+
+} 
 
 /****************************************************************************
 *  Set the X dimension of the current window in pixels.                 *
