@@ -47,7 +47,6 @@ int key_input=NO_ACTION,mouse_action=NO_ACTION;
 int mouse_x, mouse_y;
 static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 
-HMENU menu,menu_draw, menu_color;
 
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
@@ -92,8 +91,13 @@ struct Vertex{
 };
 
 struct Edge{
-	Vertex max;
-	Vertex min;
+	int Ymax, Ymin;
+	float Xinter, dx;
+};
+
+struct ListEdge{
+	int numArestas;
+	Edge** edges;
 };
 
 struct Poligono{
@@ -112,64 +116,170 @@ Poligono *initPoligonogon(int n){//recebe o número de lados e retorna o poligno
 
 }
 
-Vertex* GetPoint(Poligono *p, int k) {
-	Vertex* v = (Vertex*) malloc(sizeof(Vertex));
-	v->x = p->vertices[k]->x;
-	v->y = p->vertices[k]->y;
-	return v;
-
+void GetPoint(Poligono *p, int k, int x, int y) {
+	//Vertex* v = (Vertex*) malloc(sizeof(Vertex));
+	x = p->vertices[k]->x;
+	y = p->vertices[k]->y;
+	
 }
 
-void PolyInsert(int x1,int y1,int x2,int y2)
+void PolyInsert(ListEdge* list,int x1,int y1,int x2,int y2)
 {     // insert line segment in edge struct, if not horizontal
      if (y1!=y2)
 	 {  
-		 int YM=Max(y1,y2),J1=list.n+1;
-	     while (J1!=1 &&  list.edge[J1-1].Ymax<YM)
+		 int YM=Max(y1,y2),J1=list->numArestas +1;
+		 while (J1!=1 &&  list->edges[J1-1]->Ymax <YM)
 		 {
-			 list.edge[J1]=list.edge[J1-1];
+			 list->edges[J1]=list->edges[J1-1];
 			 J1--;
 		  }
 
-		 list.edge[J1].Ymax=YM;
-		 list.edge[J1].dx = -1*(real)(x2-x1)/(y2-y1);
+		 list->edges[J1]->Ymax=YM;
+		 list->edges[J1]->dx = -1*(float)(x2-x1)/(y2-y1);
 		 if (y1>y2)
 		 {
-	       list.edge[J1].Ymin=y2;
-		   list.edge[J1].Xinter=(real)x1;
+	       list->edges[J1]->Ymin=y2;
+		   list->edges[J1]->Xinter=(float)x1;
 		 }
 		 else {
-		   list.edge[J1].Ymin=y1;
-		   list.edge[J1].Xinter=(real)x2;
+			 list->edges[J1]->Ymin=y1;
+		   list->edges[J1]->Xinter=(float)x2;
 		 }
 
-		 list.n++;
+		 list->numArestas++;
 	 }
 
 }
 
-void LoadPolygon(Poligono p, inout list, int out, int num_Edges)
+void LoadPolygon(Poligono* p, ListEdge* list, int* num_Edges)//revisar
 {
 	int x1,x2,y1,y2,k=1;
 	
-	list.n = 0;
-	GetPoint(polygon, k,x1,y1);
-	num_Edges = 0;
+	list->numArestas = 0;
+	GetPoint(p, k, x1, x2);
+	*num_Edges = 0;
 
-	for ( ; k <= polygon.n ; k++ ) 
+	for ( ; k <= p->numLados ; k++ ) 
 	{
-		GetPoint(polygon, k%polygon.n+1,x2,y2);
+		GetPoint(p, k%p->numLados+1,x2,y2);
 		if (y1==y2) x1 = x2 ;
 		else 
 		{
 			PolyInsert(list, x1,y1,x2,y2);
-			num_Edges+=1;
+			*num_Edges+=1;
 			x1=x2;
 			y1=y2;
 		}
 	}
 
 } 
+
+void Include(ListEdge* list, int* end_Edge, int* final_Edge, int* scan)
+{	// include all edges that intersept y_scan
+   while (*end_Edge < *final_Edge && list->edges[*end_Edge+1]->Ymax >= *scan)
+   {
+	end_Edge++;
+   }
+}
+
+void XSort( ListEdge* list, int start_Edge, int last_Edge)
+{  
+	int L,k ; 
+	bool sorted=false;
+	Edge* temp;
+	// Use bubble sort
+	
+    for ( k = start_Edge ; k < last_Edge; k++ )
+	{
+	  
+	   L = k + 1; 
+	  
+	   while ( L > start_Edge && 
+		   list->edges[L]->Xinter < list->edges[L-1]->Xinter )
+	   {
+		   temp=list->edges[L];
+		   list->edges[L]=list->edges[L-1];
+		   list->edges[L-1]=temp;
+		   L--;
+		 
+	   }
+
+   }
+	
+} 
+
+void FillIn ( int x1 ,int x2 ,int  y )
+{
+	int px,py;
+	py = y  % 8 ;
+	if (x1!=x2)	{
+		for (int x = x1 ; x <= x2 ; x++ ) 
+		{
+			px=x%8;
+			DrawPixel(x,y);
+		}
+		
+	} 
+}
+
+void FillScan (ListEdge* list, int end_Edge , int start_Edge ,int scan )
+{
+	int NX , J , K;
+
+	NX = (end_Edge - start_Edge + 1)/2;
+	J = start_Edge;
+
+	for ( K = 1 ; K <= NX ; K++ )
+	{
+		FillIn ( (int)list->edges[J]->Xinter, 
+			(int)list->edges[J+1]->Xinter, scan);
+		J += 2;
+	}
+	
+}
+
+void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
+{
+	int K1;
+
+	for ( K1 = *start_Edge ; K1 <= last_Edge ; K1++)
+	{
+		if ( list->edges[K1]->Ymin < *scan )
+		{
+			list->edges[K1]->Xinter += list->edges[K1]->dx ;
+		}
+		else 
+		{  // remove edge
+			start_Edge++;
+			if ( *start_Edge <= K1 ) 
+				for ( int i = K1 ; i >= *start_Edge ; i--)
+					list->edges[i]=list->edges[i-1]; 
+		}
+   }
+}
+
+	
+void FillPolygon ( Poligono* p,  ListEdge* list )
+{
+	int Edges , start_Edge , end_Edge , scan;
+	
+	LoadPolygon(p,list, start_Edge , end_Edge);
+	if (Edges==2) return;
+	scan = list.edge[1].Ymax ;
+	start_Edge = 1 ;
+
+	Include(list, end_Edge, Edges, scan);
+	while ( end_Edge != start_Edge - 1 ) 
+	{
+		XSort(list, start_Edge, end_Edge);
+		FillScan(list, end_Edge, start_Edge, scan);
+		scan--;
+		UpdateXValues(list, end_Edge, start_Edge, scan);
+		Include(list, end_Edge, Edges, scan);
+	}
+
+}
+
 
 /****************************************************************************
 *  Set the X dimension of the current window in pixels.                 *
@@ -209,49 +319,6 @@ void DrawPixel(int x, int y)
 }
 
 
-/****************************************************************************
-*                             Menu Creation                                 *
-****************************************************************************/
-
-void MenuBar()
-{
-	HMENU menu=CreateMenu();
-	HMENU menu_draw=CreatePopupMenu();
-	HMENU menu_color=CreatePopupMenu();
-
-	AppendMenu(
-		menu,      // handle to menu to be changed
-		MF_POPUP,      // menu-item flags
-		(UINT)menu_draw,  // menu-item identifier or handle to drop-down menu or submenu
-		(LPCTSTR)L"&Draw" // menu-item content
-		);
-
-
-	InsertMenu(menu_draw,0,  MF_STRING, 21,  (LPCTSTR)L"&Line" );
-
-	AppendMenu(menu_draw,  MF_STRING, 22,  (LPCTSTR)L"&Circle" );
-
-	AppendMenu(menu,   MF_POPUP,      (UINT)menu_color, (LPCTSTR)L"&Color");
-
-	InsertMenu(menu_color,0,  MF_STRING, 1,  (LPCTSTR)L"Black" );
-	AppendMenu(menu_color,  MF_STRING, 2,  (LPCTSTR)L"Blue" );
-	AppendMenu(menu_color,  MF_STRING, 3,  (LPCTSTR)L"Green" );
-	AppendMenu(menu_color,   MF_STRING,     4, (LPCTSTR)L"Cyan");
-	AppendMenu(menu_color,   MF_STRING,      5, (LPCTSTR)L"Red");
-
-	AppendMenu(menu_color,  MF_STRING, 6,  (LPCTSTR)L"Magenta" );
-	AppendMenu(menu_color,  MF_STRING, 7,  (LPCTSTR)L"Brown" );
-	AppendMenu(menu_color,   MF_STRING,     8, (LPCTSTR)L"LightGray");
-	AppendMenu(menu_color,   MF_STRING,     9, (LPCTSTR)L"DarkGray");
-
-	AppendMenu(menu_color,  MF_STRING, 10,  (LPCTSTR)L"LightBlue" );
-	AppendMenu(menu_color,  MF_STRING, 11,  (LPCTSTR)L"LightGreen" );
-	AppendMenu(menu_color,  MF_STRING, 12,  (LPCTSTR)L"LightCyan" );
-	AppendMenu(menu_color,   MF_STRING,     13, (LPCTSTR)L"LightRed");
-	AppendMenu(menu_color,   MF_STRING,     14, (LPCTSTR)L"LightMagenta");
-	AppendMenu(menu_color,   MF_STRING,     15, (LPCTSTR)L"Yellow");
-	AppendMenu(menu_color,   MF_STRING,     16, (LPCTSTR)L"White");
-}
 
 
 
@@ -271,7 +338,7 @@ void MenuBar()
 
 
 wchar_t wind_class[]=L"Window Application";
-wchar_t wind_name[]= L"Lab2 CCI36";
+wchar_t wind_name[]= L"Lab1 CCI36     ";
 void InitGraphics()
 {
 
@@ -290,11 +357,10 @@ void InitGraphics()
 	wc.hIcon = NULL;
 	wc.lpszMenuName = NULL;						// menu, if any
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH); // background color
-	wc.style = CS_HREDRAW|CS_VREDRAW|CS_DBLCLKS ;		// window style
+	wc.style = CS_HREDRAW|CS_VREDRAW;		// window style
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 
-	MenuBar();
 	/* Registeer window class      */
 	//GlobalAddAtom(window_class);
 
@@ -312,7 +378,7 @@ void InitGraphics()
 		0, 0,                //window  top, left corner(origin)
 		500, 500 ,                   // window X,Y size                                    
 		(HWND)NULL,                   // Parent window         /
-		(HMENU)menu,				// handle to menu 
+		(HMENU)NULL,				// handle to menu 
 		(HINSTANCE) hInst,			// handle to application instance 
 		(LPVOID)NULL);  //  pointer to window-creation data  
 
@@ -440,8 +506,6 @@ void  PrintMessage(char *buffer)
 
 }
 
-
-int menu_item;
 
 /****************************************************************************
 *  Mouse Handler for Win 95                                                   *
@@ -590,9 +654,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd,UINT messg,WPARAM wParam,LPARAM lParam
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-	case WM_COMMAND:
-		menu_item=LOWORD(wParam);
-		break;
 	default: 
 		return(DefWindowProc(hWnd,messg,wParam,lParam));
 		break;
@@ -601,81 +662,6 @@ static LRESULT CALLBACK WinProc(HWND hWnd,UINT messg,WPARAM wParam,LPARAM lParam
 	return 0;
 
 }
-
-/****************************************************************************
-*  Draws a line between two specified points on the screen.                 *
-****************************************************************************/
-void DrawLine(int x, int y, int x2, int y2)
-{
-   
-    if (graphics)
-    {
-        MoveToEx(hdc,x,y,NULL);    
-        LineTo(hdc, x2,y2);	 
-    }
-}
-
-
-/****************************************************************************
-*  Draw a ellipse on the screen.                                            *
-****************************************************************************/
-
-void DrawEllipse(int x, int y, int x_radius, int y_radius, int filled)
-{    
-    int x1,y1,x2,y2;
-//			Win32 Ellipse function requires ellipse bounding box as input
-    if (graphics)
-    {
-		// calculate the bounding box
-		if (x_radius>0)
-		{
-          x1=x-x_radius;  
-	      x2=x+x_radius;
-		}
-		else if (x_radius==0)// make the ellipse 2 pixels wide (a line)
-		{ x1=x;
-		  x2=x+1;
-		}
-		 else return; // wrong radius
-		if (y_radius>0)
-		{
-          y1=y-y_radius;  
-	      y2=y+y_radius;
-		}
-		else if (y_radius==0) // make the ellipse 2 pixels wide (a line)
-		{ y1=y;
-		  y2=y+1;
-		}
-		 else return;
-      
-	 
-    
-        if (!filled)
-        {	// Need to select NULL_BRUSH to avoid filling the ellipse
-			HBRUSH brush =(HBRUSH)GetStockObject(NULL_BRUSH);
-		    SelectObject(hdc,brush);
-            Ellipse(hdc,x1,y1,x2,y2);  // Draw ellipse
-        }
-        else
-		
-        {			// Draw a solid ellipse with a brush of current color 
-			HBRUSH brush = CreateSolidBrush(win_draw_color);
-		    SelectObject(hdc,brush);
-			Ellipse(hdc,x1,y1,x2,y2);
-					// remove brush
-			DeleteObject(brush);
-        }
-		   
-	
-
-    }
-}
-
-void DrawCircle(int x, int y, int r)
-{
-	DrawEllipse(x,y,r,r,0);
-}
-
 
 
 int Max(int x, int y)
@@ -887,131 +873,56 @@ void DrawCircleBresenham(int xc, int yc, int R, int tipo)
 
 void main()
 {  
-	int p0_x, p0_y, p1_x,p1_y, menu_it=0, draw=1, color=MY_WHITE;
-	InitGraphics();
-
-	menu_item=0;
-	CheckMenuItem(menu_color,1,MF_CHECKED);
-	CheckMenuItem(menu_draw,21,MF_CHECKED);
-	while (key_input!=ESC)  // ESC exits the program
-	{
+	int p0_x, p0_y, p1_x,p1_y,color=MY_MAGENTA;
+	InitGraphics(); 
+	while (key_input!=ESC) {	// ESC exits the program
 		CheckGraphicsMsg();
-		if (menu_it!=menu_item)
-			switch(menu_item){
-			case 21:{
-				CheckMenuItem(menu_draw,22,MF_UNCHECKED); 
-				CheckMenuItem(menu_draw,21,MF_CHECKED);
-				menu_it=menu_item;
-				draw=1;
-				break;
-					} 
-			case 22:
-				{
-					CheckMenuItem(menu_draw,21,MF_UNCHECKED); 
-					CheckMenuItem(menu_draw,22,MF_CHECKED);
-					menu_it=menu_item;
-					draw=2;
-					break;
-				}
-			default:
-				{ int i; 
-				for (i=1; i<=16; i++)
-					CheckMenuItem(menu_color,i,MF_UNCHECKED); 
-				CheckMenuItem(menu_color,menu_item,MF_CHECKED);
-				if (menu_item>=1 && menu_item<=16)
-					color=menu_item-1;
-
-				menu_it=menu_item;
-
-				}
-		}
-		if (mouse_action==L_MOUSE_DOWN)
-		{  // Pick first point up 
-
-			p0_x=p1_x=mouse_x;
-			p0_y=p1_y=mouse_y;
-
-		}
-		if (mouse_action==L_MOUSE_MOVE_DOWN)
-		{  // Example of elastic line
-			if (p1_x!=mouse_x || p1_y!=mouse_y)
-			{  // Erase previous line. NOTE: It can improved using XOR line
+		if (mouse_action==L_MOUSE_DOWN) {  	// Pick first point 
+			p0_x=p1_x=mouse_x; p0_y=p1_y=mouse_y;
+			//	 mouse_action=NO_ACTION;
+		}  
+		if (mouse_action==L_MOUSE_MOVE_DOWN){//Mouse moving left button
+			if (p1_x!=mouse_x || p1_y!=mouse_y)  	// test if x or y changed
+			{		// Erase previous line. 
 				SetGraphicsColor((int)MY_BLACK,1);
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
-				p1_x=mouse_x;
-				p1_y=mouse_y;  // Draw new line
-				SetGraphicsColor((int)MY_LIGHTGREEN,1);
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
 
-			}	 
+				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // It can be improved using XOR line
+				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
+				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
+
+				p1_x=mouse_x;p1_y=mouse_y;  
+				SetGraphicsColor((int)MY_LIGHTGREEN,1);
+
+				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw new line
+				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
+				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
+				//mouse_action=NO_ACTION;
+			}
 		}
-		else  if(mouse_action==L_MOUSE_UP)
+		if (mouse_action==L_MOUSE_UP)
 		{	
-			SetGraphicsColor(color,2);
-			if (draw==1)
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
-			else DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
+			SetGraphicsColor((int)color,2);
+
+			DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+			//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw  final line
+			//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA); //aqui não deve ser usada XorLine
+
 			mouse_action=NO_ACTION;
 		}
-
-
+		if (key_input==ENTER)	 // Identify Enter
+		{   
+			switch(buffer[0]) { 	// Example command entry:”cor 2” 
+			case 'c': // Set color which number starts from buffer position 3
+				color=atoi(&buffer[3]);
+				if (color>=0 && color<16)
+					SetGraphicsColor(color,2);
+				ClearString(buffer);  // Erase buffer
+				break;		
+			}
+			key_input=-1;
+		}
 	}
 	CloseGraphics();
 }
-
-//LAB1 MAIN
-//void main()
-//{  
-//	int p0_x, p0_y, p1_x,p1_y,color=MY_MAGENTA;
-//	InitGraphics(); 
-//	while (key_input!=ESC) {	// ESC exits the program
-//		CheckGraphicsMsg();
-//		if (mouse_action==L_MOUSE_DOWN) {  	// Pick first point 
-//			p0_x=p1_x=mouse_x; p0_y=p1_y=mouse_y;
-//			//	 mouse_action=NO_ACTION;
-//		}  
-//		if (mouse_action==L_MOUSE_MOVE_DOWN){//Mouse moving left button
-//			if (p1_x!=mouse_x || p1_y!=mouse_y)  	// test if x or y changed
-//			{		// Erase previous line. 
-//				SetGraphicsColor((int)MY_BLACK,1);
-//
-//				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
-//				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // It can be improved using XOR line
-//				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
-//				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
-//
-//				p1_x=mouse_x;p1_y=mouse_y;  
-//				SetGraphicsColor((int)MY_LIGHTGREEN,1);
-//
-//				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
-//				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw new line
-//				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
-//				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
-//				//mouse_action=NO_ACTION;
-//			}
-//		}
-//		if (mouse_action==L_MOUSE_UP)
-//		{	
-//			SetGraphicsColor((int)color,2);
-//
-//			DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
-//			//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw  final line
-//			//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA); //aqui não deve ser usada XorLine
-//
-//			mouse_action=NO_ACTION;
-//		}
-//		if (key_input==ENTER)	 // Identify Enter
-//		{   
-//			switch(buffer[0]) { 	// Example command entry:”cor 2” 
-//			case 'c': // Set color which number starts from buffer position 3
-//				color=atoi(&buffer[3]);
-//				if (color>=0 && color<16)
-//					SetGraphicsColor(color,2);
-//				ClearString(buffer);  // Erase buffer
-//				break;		
-//			}
-//			key_input=-1;
-//		}
-//	}
-//	CloseGraphics();
-//}
