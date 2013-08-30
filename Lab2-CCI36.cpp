@@ -263,20 +263,23 @@ void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
 void FillPolygon ( Poligono* p,  ListEdge* list )
 {
 	int Edges , start_Edge , end_Edge , scan;
-	
-	LoadPolygon(p,list, start_Edge , end_Edge);
+	int num_edges = end_Edge - start_Edge + 1;
+
+	LoadPolygon(p,list, &num_edges);
+
 	if (Edges==2) return;
-	scan = list.edge[1].Ymax ;
+	scan = list->edges[1]->Ymax ;
 	start_Edge = 1 ;
 
-	Include(list, end_Edge, Edges, scan);
+	Include(list, &end_Edge, &Edges, &scan);
+
 	while ( end_Edge != start_Edge - 1 ) 
 	{
 		XSort(list, start_Edge, end_Edge);
 		FillScan(list, end_Edge, start_Edge, scan);
 		scan--;
-		UpdateXValues(list, end_Edge, start_Edge, scan);
-		Include(list, end_Edge, Edges, scan);
+		UpdateXValues(list, end_Edge, &start_Edge, &scan);
+		Include(list, &end_Edge, &Edges, &scan);
 	}
 
 }
