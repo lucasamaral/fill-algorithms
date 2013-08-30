@@ -50,6 +50,7 @@ static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
 
+HMENU menu,menu_draw, menu_color;
 
 static COLORREF win_draw_color =RGB(255,255,255);  // current draw color
 static HBRUSH blackBrush;
@@ -160,8 +161,6 @@ void DrawPixel(int x, int y)
 /****************************************************************************
 *                             Menu Creation                                 *
 ****************************************************************************/
-
-HMENU menu,menu_draw, menu_color;
 
 void MenuBar()
 {
