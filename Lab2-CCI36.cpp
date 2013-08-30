@@ -51,6 +51,7 @@ static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
 
+HMENU menu,menu_draw, menu_color;
 
 static COLORREF win_draw_color =RGB(255,255,255);  // current draw color
 static HBRUSH blackBrush;
@@ -127,7 +128,7 @@ void PolyInsert(ListEdge* list,int x1,int y1,int x2,int y2)
 {     // insert line segment in edge struct, if not horizontal
      if (y1!=y2)
 	 {  
-		 int YM=Max(y1,y2),J1=list->numArestas +1;
+		 int YM=max(y1,y2),J1=list->numArestas +1;
 		 while (J1!=1 &&  list->edges[J1-1]->Ymax <YM)
 		 {
 			 list->edges[J1]=list->edges[J1-1];
@@ -321,6 +322,49 @@ void DrawPixel(int x, int y)
 }
 
 
+/****************************************************************************
+*                             Menu Creation                                 *
+****************************************************************************/
+
+void MenuBar()
+{
+	menu=CreateMenu();
+	menu_draw=CreatePopupMenu();
+	menu_color=CreatePopupMenu();
+
+	AppendMenu(
+		menu,      // handle to menu to be changed
+		MF_POPUP,      // menu-item flags
+		(UINT)menu_draw,  // menu-item identifier or handle to drop-down menu or submenu
+		(LPCTSTR)L"&Draw" // menu-item content
+		);
+
+
+	InsertMenu(menu_draw,0,  MF_STRING, 21,  (LPCTSTR)L"&Line" );
+
+	AppendMenu(menu_draw,  MF_STRING, 22,  (LPCTSTR)L"&Circle" );
+
+	AppendMenu(menu,   MF_POPUP,      (UINT)menu_color, (LPCTSTR)L"&Color");
+
+	InsertMenu(menu_color,0,  MF_STRING, 1,  (LPCTSTR)L"Black" );
+	AppendMenu(menu_color,  MF_STRING, 2,  (LPCTSTR)L"Blue" );
+	AppendMenu(menu_color,  MF_STRING, 3,  (LPCTSTR)L"Green" );
+	AppendMenu(menu_color,   MF_STRING,     4, (LPCTSTR)L"Cyan");
+	AppendMenu(menu_color,   MF_STRING,      5, (LPCTSTR)L"Red");
+
+	AppendMenu(menu_color,  MF_STRING, 6,  (LPCTSTR)L"Magenta" );
+	AppendMenu(menu_color,  MF_STRING, 7,  (LPCTSTR)L"Brown" );
+	AppendMenu(menu_color,   MF_STRING,     8, (LPCTSTR)L"LightGray");
+	AppendMenu(menu_color,   MF_STRING,     9, (LPCTSTR)L"DarkGray");
+
+	AppendMenu(menu_color,  MF_STRING, 10,  (LPCTSTR)L"LightBlue" );
+	AppendMenu(menu_color,  MF_STRING, 11,  (LPCTSTR)L"LightGreen" );
+	AppendMenu(menu_color,  MF_STRING, 12,  (LPCTSTR)L"LightCyan" );
+	AppendMenu(menu_color,   MF_STRING,     13, (LPCTSTR)L"LightRed");
+	AppendMenu(menu_color,   MF_STRING,     14, (LPCTSTR)L"LightMagenta");
+	AppendMenu(menu_color,   MF_STRING,     15, (LPCTSTR)L"Yellow");
+	AppendMenu(menu_color,   MF_STRING,     16, (LPCTSTR)L"White");
+}
 
 
 
