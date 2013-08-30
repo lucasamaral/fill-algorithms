@@ -47,7 +47,10 @@ int key_input=NO_ACTION,mouse_action=NO_ACTION;
 int mouse_x, mouse_y;
 static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> be3f21ed125db257af1ea72b85da6fc0fd7d7556
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
 
@@ -319,6 +322,54 @@ void DrawPixel(int x, int y)
 }
 
 
+<<<<<<< HEAD
+/****************************************************************************
+*                             Menu Creation                                 *
+****************************************************************************/
+
+HMENU menu,menu_draw, menu_color;
+
+void MenuBar()
+{
+	menu=CreateMenu();
+	menu_draw=CreatePopupMenu();
+	menu_color=CreatePopupMenu();
+
+	AppendMenu(
+		menu,      // handle to menu to be changed
+		MF_POPUP,      // menu-item flags
+		(UINT)menu_draw,  // menu-item identifier or handle to drop-down menu or submenu
+		(LPCTSTR)L"&Draw" // menu-item content
+		);
+
+
+	InsertMenu(menu_draw,0,  MF_STRING, 21,  (LPCTSTR)L"&Line" );
+
+	AppendMenu(menu_draw,  MF_STRING, 22,  (LPCTSTR)L"&Circle" );
+
+	AppendMenu(menu,   MF_POPUP,      (UINT)menu_color, (LPCTSTR)L"&Color");
+
+	InsertMenu(menu_color,0,  MF_STRING, 1,  (LPCTSTR)L"Black" );
+	AppendMenu(menu_color,  MF_STRING, 2,  (LPCTSTR)L"Blue" );
+	AppendMenu(menu_color,  MF_STRING, 3,  (LPCTSTR)L"Green" );
+	AppendMenu(menu_color,   MF_STRING,     4, (LPCTSTR)L"Cyan");
+	AppendMenu(menu_color,   MF_STRING,      5, (LPCTSTR)L"Red");
+
+	AppendMenu(menu_color,  MF_STRING, 6,  (LPCTSTR)L"Magenta" );
+	AppendMenu(menu_color,  MF_STRING, 7,  (LPCTSTR)L"Brown" );
+	AppendMenu(menu_color,   MF_STRING,     8, (LPCTSTR)L"LightGray");
+	AppendMenu(menu_color,   MF_STRING,     9, (LPCTSTR)L"DarkGray");
+
+	AppendMenu(menu_color,  MF_STRING, 10,  (LPCTSTR)L"LightBlue" );
+	AppendMenu(menu_color,  MF_STRING, 11,  (LPCTSTR)L"LightGreen" );
+	AppendMenu(menu_color,  MF_STRING, 12,  (LPCTSTR)L"LightCyan" );
+	AppendMenu(menu_color,   MF_STRING,     13, (LPCTSTR)L"LightRed");
+	AppendMenu(menu_color,   MF_STRING,     14, (LPCTSTR)L"LightMagenta");
+	AppendMenu(menu_color,   MF_STRING,     15, (LPCTSTR)L"Yellow");
+	AppendMenu(menu_color,   MF_STRING,     16, (LPCTSTR)L"White");
+}
+=======
+>>>>>>> be3f21ed125db257af1ea72b85da6fc0fd7d7556
 
 
 
@@ -926,3 +977,68 @@ void main()
 	}
 	CloseGraphics();
 }
+<<<<<<< HEAD
+
+//LAB1 MAIN
+//void main()
+//{  
+//	int p0_x, p0_y, p1_x,p1_y,color=MY_MAGENTA;
+//	InitGraphics(); 
+//	menu_item = 0;
+//	CheckMenuItem(menu_color, 1, MF_CHECKED);
+//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+//
+//	while (key_input!=ESC) {	// ESC exits the program
+//		CheckGraphicsMsg();
+//
+//		if (mouse_action==L_MOUSE_DOWN) {  	// Pick first point 
+//			p0_x=p1_x=mouse_x; p0_y=p1_y=mouse_y;
+//			//	 mouse_action=NO_ACTION;
+//		}  
+//		if (mouse_action==L_MOUSE_MOVE_DOWN){//Mouse moving left button
+//			if (p1_x!=mouse_x || p1_y!=mouse_y)  	// test if x or y changed
+//			{		// Erase previous line. 
+//				SetGraphicsColor((int)MY_BLACK,1);
+//
+//				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+//				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // It can be improved using XOR line
+//				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
+//				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
+//
+//				p1_x=mouse_x;p1_y=mouse_y;  
+//				SetGraphicsColor((int)MY_LIGHTGREEN,1);
+//
+//				DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+//				//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw new line
+//				//DrawXorLine(p0_x,p0_y,p1_x,p1_y, LINHA); //Xor line é desenhada na linha elástica
+//				//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA);
+//				//mouse_action=NO_ACTION;
+//			}
+//		}
+//		if (mouse_action==L_MOUSE_UP)
+//		{	
+//			SetGraphicsColor((int)color,2);
+//
+//			DrawCircleBresenham(p0_x,p0_y,sqrt(pow((float)p1_x-(float)p0_x,2)-pow((float)p1_y-(float)p0_y,2)), TRACEJADO);
+//			//DrawLineBresenham(p0_x,p0_y,p1_x,p1_y, PONTILHADO); // Draw  final line
+//			//DrawLine(p0_x,p0_y,p1_x,p1_y, LINHA); //aqui não deve ser usada XorLine
+//
+//			mouse_action=NO_ACTION;
+//		}
+//		if (key_input==ENTER)	 // Identify Enter
+//		{   
+//			switch(buffer[0]) { 	// Example command entry:”cor 2” 
+//			case 'c': // Set color which number starts from buffer position 3
+//				color=atoi(&buffer[3]);
+//				if (color>=0 && color<16)
+//					SetGraphicsColor(color,2);
+//				ClearString(buffer);  // Erase buffer
+//				break;		
+//			}
+//			key_input=-1;
+//		}
+//	}
+//	CloseGraphics();
+//}
+=======
+>>>>>>> be3f21ed125db257af1ea72b85da6fc0fd7d7556
