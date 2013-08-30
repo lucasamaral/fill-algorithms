@@ -47,8 +47,6 @@ int key_input=NO_ACTION,mouse_action=NO_ACTION;
 int mouse_x, mouse_y;
 static BOOL graphics = TRUE;                /* Boolean, enable graphics?  */
 
-HMENU menu,menu_draw, menu_color;
-
 //static short draw_color = MY_WHITE;        /* Current drawing color.     */
 char buffer[200]="";					// string buffer for keyboard input
 
@@ -163,11 +161,13 @@ void DrawPixel(int x, int y)
 *                             Menu Creation                                 *
 ****************************************************************************/
 
+HMENU menu,menu_draw, menu_color;
+
 void MenuBar()
 {
-	HMENU menu=CreateMenu();
-	HMENU menu_draw=CreatePopupMenu();
-	HMENU menu_color=CreatePopupMenu();
+	menu=CreateMenu();
+	menu_draw=CreatePopupMenu();
+	menu_color=CreatePopupMenu();
 
 	AppendMenu(
 		menu,      // handle to menu to be changed
@@ -914,8 +914,13 @@ void main()
 //{  
 //	int p0_x, p0_y, p1_x,p1_y,color=MY_MAGENTA;
 //	InitGraphics(); 
+//	menu_item = 0;
+//	CheckMenuItem(menu_color, 1, MF_CHECKED);
+//	CheckMenuItem(menu_draw, 21, MF_CHECKED);
+//
 //	while (key_input!=ESC) {	// ESC exits the program
 //		CheckGraphicsMsg();
+//
 //		if (mouse_action==L_MOUSE_DOWN) {  	// Pick first point 
 //			p0_x=p1_x=mouse_x; p0_y=p1_y=mouse_y;
 //			//	 mouse_action=NO_ACTION;
