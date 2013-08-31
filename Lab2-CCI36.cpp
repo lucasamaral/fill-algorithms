@@ -88,8 +88,16 @@ static COLORREF color_trans_map[] =
 struct Vertex{
 	int x;
 	int y;
-
+	Vertex *next;
 };
+
+Vertex *createVertex(int x, int y){
+	Vertex* v = (Vertex*) malloc(sizeof(Vertex));
+	v->x = x;
+	v->y = y;
+	v->next = NULL;
+	return v;
+}
 
 struct Edge{
 	int Ymax, Ymin;
@@ -98,57 +106,76 @@ struct Edge{
 
 struct ListEdge{
 	int numArestas;
-	Edge** edges;
+	Edge* edges;
 };
+
+
+
+ListEdge *createListEdge(int numArestas){
+	ListEdge* le = (ListEdge*) malloc(sizeof(ListEdge));
+	le->numArestas = numArestas;
+	le->edges = (Edge*) malloc(numArestas * sizeof(Edge));
+	for (int i = 0; i < numArestas; i++)
+	{
+		/*le->edges[i] = (Edge*) malloc(sizeof(Edge));*/
+		le->edges[i].dx = 0;
+		le->edges[i].Xinter = 0;
+		le->edges[i].Ymax = 0;
+		le->edges[i].Ymin = 0;
+	}
+	return le;
+}
 
 struct Poligono{
 	int numLados;
-	Vertex** vertices;
-	Edge** arestas;
-		
+	Vertex* primeiro;
 };
 
-Poligono *initPoligonogon(int n){//recebe o número de lados e retorna o poligno
+Poligono *initPoligono(){//recebe o número de lados e retorna o poligno
 	Poligono* p = (Poligono*) malloc(sizeof(Poligono));
-	p->numLados = n;
-	p->vertices =(Vertex**) malloc(n * sizeof(Vertex));
-	p->arestas =(Edge**) malloc(n * sizeof(Edge));
+	p->numLados = 0;
+	p->primeiro = NULL;
+	//p->arestas =(Edge**) malloc(n * sizeof(Edge));
 	return p;
-
 }
 
-void GetPoint(Poligono *p, int k, int x, int y) {
+void GetPoint(Poligono *p, int k, int* x, int* y) {
 	//Vertex* v = (Vertex*) malloc(sizeof(Vertex));
-	x = p->vertices[k]->x;
-	y = p->vertices[k]->y;
-	
+	Vertex *head = p->primeiro;
+	for (int i = 0; i < k; i++)
+	{
+		head = head->next;
+	}
+	*x = head->x;
+	*y = head->y;
 }
 
 void PolyInsert(ListEdge* list,int x1,int y1,int x2,int y2)
 {     // insert line segment in edge struct, if not horizontal
-     if (y1!=y2)
-	 {  
-		 int YM=max(y1,y2),J1=list->numArestas +1;
-		 while (J1!=1 &&  list->edges[J1-1]->Ymax <YM)
-		 {
-			 list->edges[J1]=list->edges[J1-1];
-			 J1--;
-		  }
+	if (y1!=y2)
+	{
+		int YM=max(y1,y2),J1=list->numArestas +1;
+		while (J1!=1 &&  list->edges[J1-1].Ymax <YM)
+		{
+			list->edges[J1]=list->edges[J1-1];
+			J1--;
+		}
 
-		 list->edges[J1]->Ymax=YM;
-		 list->edges[J1]->dx = -1*(float)(x2-x1)/(y2-y1);
-		 if (y1>y2)
-		 {
-	       list->edges[J1]->Ymin=y2;
-		   list->edges[J1]->Xinter=(float)x1;
-		 }
-		 else {
-			 list->edges[J1]->Ymin=y1;
-		   list->edges[J1]->Xinter=(float)x2;
-		 }
-
-		 list->numArestas++;
-	 }
+		list->edges[J1].Ymax=YM;
+		printf("%d", list->edges[J1].Ymax);
+		list->edges[J1].dx = -1*(float)(x2-x1)/(y2-y1);
+		printf("%d", list->edges[J1].dx);
+		if (y1>y2)
+		{
+			list->edges[J1].Ymin=y2;
+			list->edges[J1].Xinter=(float)x1;
+		}
+		else {
+			list->edges[J1].Ymin=y1;
+			list->edges[J1].Xinter=(float)x2;
+		}
+		list->numArestas++;
+	}
 
 }
 
@@ -157,29 +184,32 @@ void LoadPolygon(Poligono* p, ListEdge* list, int* num_Edges)//revisar
 	int x1,x2,y1,y2,k=1;
 	
 	list->numArestas = 0;
-	GetPoint(p, k, x1, x2);
+	GetPoint(p, k, &x1, &y1);
 	*num_Edges = 0;
 
 	for ( ; k <= p->numLados ; k++ ) 
 	{
-		GetPoint(p, k%p->numLados+1,x2,y2);
+		GetPoint(p, k%p->numLados+1,&x2,&y2);
 		if (y1==y2) x1 = x2 ;
 		else 
 		{
+			//list->edges[list->numArestas] == (Edge*) malloc(sizeof(Edge));
 			PolyInsert(list, x1,y1,x2,y2);
 			*num_Edges+=1;
+			printf("\n%d",list->edges[1].Ymax);
 			x1=x2;
 			y1=y2;
 		}
 	}
 
+
 } 
 
 void Include(ListEdge* list, int* end_Edge, int* final_Edge, int* scan)
 {	// include all edges that intersept y_scan
-   while (*end_Edge < *final_Edge && list->edges[*end_Edge+1]->Ymax >= *scan)
+   while (*end_Edge < *final_Edge && list->edges[*end_Edge+1].Ymax >= *scan)
    {
-	end_Edge++;
+	(*end_Edge) = (*end_Edge)+1;
    }
 }
 
@@ -196,11 +226,11 @@ void XSort( ListEdge* list, int start_Edge, int last_Edge)
 	   L = k + 1; 
 	  
 	   while ( L > start_Edge && 
-		   list->edges[L]->Xinter < list->edges[L-1]->Xinter )
+		   list->edges[L].Xinter < list->edges[L-1].Xinter )
 	   {
-		   temp=list->edges[L];
+		   temp=&list->edges[L];
 		   list->edges[L]=list->edges[L-1];
-		   list->edges[L-1]=temp;
+		   list->edges[L-1]=*temp;
 		   L--;
 		 
 	   }
@@ -232,8 +262,8 @@ void FillScan (ListEdge* list, int end_Edge , int start_Edge ,int scan )
 
 	for ( K = 1 ; K <= NX ; K++ )
 	{
-		FillIn ( (int)list->edges[J]->Xinter, 
-			(int)list->edges[J+1]->Xinter, scan);
+		FillIn ( (int)list->edges[J].Xinter, 
+			(int)list->edges[J+1].Xinter, scan);
 		J += 2;
 	}
 	
@@ -245,13 +275,13 @@ void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
 
 	for ( K1 = *start_Edge ; K1 <= last_Edge ; K1++)
 	{
-		if ( list->edges[K1]->Ymin < *scan )
+		if ( list->edges[K1].Ymin < *scan )
 		{
-			list->edges[K1]->Xinter += list->edges[K1]->dx ;
+			list->edges[K1].Xinter += list->edges[K1].dx ;
 		}
 		else 
 		{  // remove edge
-			start_Edge++;
+			(*start_Edge) = (*start_Edge)+1;
 			if ( *start_Edge <= K1 ) 
 				for ( int i = K1 ; i >= *start_Edge ; i--)
 					list->edges[i]=list->edges[i-1]; 
@@ -262,14 +292,14 @@ void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
 	
 void FillPolygon ( Poligono* p,  ListEdge* list )
 {
-	int Edges , start_Edge , end_Edge , scan;
-	int num_edges = end_Edge - start_Edge + 1;
+	int Edges, start_Edge , end_Edge , scan;
 
-	LoadPolygon(p,list, &num_edges);
+	LoadPolygon(p,list, &Edges);
 
 	if (Edges==2) return;
-	scan = list->edges[1]->Ymax ;
-	start_Edge = 1 ;
+	scan = list->edges[1].Ymax ;
+	start_Edge = 1;
+	end_Edge = 0;
 
 	Include(list, &end_Edge, &Edges, &scan);
 
@@ -996,15 +1026,30 @@ void DrawCircleBresenham(int xc, int yc, int R, int tipo)
 	}
 }
 
+void printPoligono(Poligono* p)
+{
+	Vertex* head = p->primeiro;
+	printf("num lados: %d\n",p->numLados);
+	int i = 0;
+	while(head != NULL){
+		printf("Ponto: %d - x= %4d  y=%4d\n", i, head->x,head->y);
+		head = head->next;
+		i++;
+	}
+}
 
 void main()
 {
 	int p0_x, p0_y, p1_x,p1_y, menu_it=0, draw=1, color=MY_WHITE;
 	InitGraphics();
+	
+	Poligono* p = initPoligono();
+	Vertex* current = NULL;
 
 	menu_item=0;
 	CheckMenuItem(menu_color,1,MF_CHECKED);
 	CheckMenuItem(menu_draw,21,MF_CHECKED);
+	boolean firstPoint = true;
 	while (key_input!=ESC)  // ESC exits the program
 	{
 		CheckGraphicsMsg();
@@ -1037,12 +1082,16 @@ void main()
 
 				}
 		}
+		
 		if (mouse_action==L_MOUSE_DOWN)
 		{  // Pick first point up 
-
-			p0_x=p1_x=mouse_x;
-			p0_y=p1_y=mouse_y;
-
+			if(firstPoint){
+				p0_x=p1_x=mouse_x;
+				p0_y=p1_y=mouse_y;
+				Vertex* v = createVertex(p0_x,p0_y);
+				p->primeiro = v;
+				current = v;
+			}
 		}
 		if (mouse_action==L_MOUSE_MOVE_DOWN)
 		{  // Example of elastic line
@@ -1060,13 +1109,28 @@ void main()
 		else  if(mouse_action==L_MOUSE_UP)
 		{	
 			SetGraphicsColor(color,2);
-			if (draw==1)
+			if (draw==1){
 				DrawLine(p0_x,p0_y,p1_x,p1_y);
+				Vertex* final = createVertex(p1_x,p1_y);
+				current->next = final;
+				current = current->next;
+				current->next = NULL;
+				p->numLados++;
+				p0_x = p1_x;
+				p0_y = p1_y;
+				if(firstPoint)
+					firstPoint = false;
+			}
 			else DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
 			mouse_action=NO_ACTION;
 		}
-
-
+		else if (mouse_action==R_MOUSE_DOWN)
+		{
+			ListEdge *listaArestas = createListEdge(p->numLados);
+			FillPolygon(p,listaArestas);
+			mouse_action=NO_ACTION;
+		}
+		
 	}
 	CloseGraphics();
 }
