@@ -85,13 +85,13 @@ static COLORREF color_trans_map[] =
 	RGB(255,255,255),//MY_WHITE,
 };
 
-struct Vertex{
+struct Vertex{ //os vértices serão adicionados em uma lista ligada
 	int x;
 	int y;
 	Vertex *next;
 };
 
-Vertex *createVertex(int x, int y){
+Vertex *createVertex(int x, int y){//função para a criação de um vértice
 	Vertex* v = (Vertex*) malloc(sizeof(Vertex));
 	v->x = x;
 	v->y = y;
@@ -99,23 +99,21 @@ Vertex *createVertex(int x, int y){
 	return v;
 }
 
-struct Edge{
-	int Ymax, Ymin;
-	float Xinter, dx;
+struct Edge{ //estrutura de uma aresta
+	int Ymax, Ymin; //Y máximo e Y mínimo
+	float Xinter, dx; //x intermediário e o passo dx
 };
 
-struct ListEdge{
-	int numArestas;
-	Edge* edges;
+struct ListEdge{//estrtura do vetor que contém as arestas
+	int numArestas; //número de arestas do vetor
+	Edge* edges; //vetor com as arestas
 };
 
-
-
-ListEdge *createListEdge(int numArestas){
-	ListEdge* le = (ListEdge*) malloc(sizeof(ListEdge));
-	le->numArestas = numArestas;
+ListEdge *createListEdge(int numArestas){//inicialização da lista de arestas
+	ListEdge* le = (ListEdge*) malloc(sizeof(ListEdge)); //alocação da estrutura
+	le->numArestas = numArestas; //definindo o número de arestas
 	le->edges = (Edge*) malloc(numArestas * sizeof(Edge));
-	for (int i = 0; i < numArestas; i++)
+	for (int i = 0; i < numArestas; i++) //incializando todos os valores das arestas
 	{
 		le->edges[i].dx = 0;
 		le->edges[i].Xinter = 0;
@@ -125,12 +123,12 @@ ListEdge *createListEdge(int numArestas){
 	return le;
 }
 
-struct Poligono{
-	int numLados;
-	Vertex* primeiro;
+struct Poligono{// estrutura do polígono
+	int numLados; //número de lados
+	Vertex* primeiro; //ponteiro para o primeiro vértice da lista ligada 
 };
 
-Poligono *initPoligono(){//recebe o número de lados e retorna o poligno
+Poligono *initPoligono(){//incializa o polígono
 	Poligono* p = (Poligono*) malloc(sizeof(Poligono));
 	p->numLados = 0;
 	p->primeiro = NULL;
