@@ -1082,27 +1082,27 @@ void main()
 			SetGraphicsColor(color,2);
 			if (draw==1){
 				DrawLine(p0_x,p0_y,p1_x,p1_y);//desenha a aresta
-				Vertex* final = createVertex(p1_x,p1_y);
+				Vertex* final = createVertex(p1_x,p1_y);//criando e adicionando vértice ao final da lista
 				current->next = final;
-				current = current->next;
+				current = current->next;//move para o próximo vértice da lista ligada
 				current->next = NULL;
-				p->numLados++;
-				p0_x = p1_x;
+				p->numLados++;//aumenta o tamanho de lados
+				p0_x = p1_x;//para cada aresta desenhada o próximo p0 é o p1 da aresta anterior.
 				p0_y = p1_y;
-				if(firstPoint)
+				if(firstPoint)// testa se é o primeiro ponto desenhado
 					firstPoint = false;
 			}
 			else DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
 			mouse_action=NO_ACTION;
 		}
-		else if (mouse_action==R_MOUSE_DOWN)
+		else if (mouse_action==R_MOUSE_DOWN)// clique no botão direito do mouse ao terminar a figura
 		{
-			Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);
+			Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);//último vértice desenhado
 			current->next = final;
-			DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);
-			p->numLados++;
-			ListEdge *listaArestas = createListEdge(p->numLados);
-			FillPolygon(p,listaArestas);
+			DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);//  última aresta que completa a figura
+			p->numLados++; //aumenta o número de lados do pilígono
+			ListEdge *listaArestas = createListEdge(p->numLados);//cria a lista de arestas
+			FillPolygon(p,listaArestas);//preenche o polígono
 			mouse_action=NO_ACTION;
 		}
 		
