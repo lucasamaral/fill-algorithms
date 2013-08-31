@@ -296,48 +296,6 @@ void FillPolygon ( Poligono* p,  ListEdge* list )
 	}
 }
 
-/****************************************************************************
-*                           The  Circle Fill                                *
-*                              EVERYTHING                                   *
-****************************************************************************/
-
-struct Circle
-{
-	int x_center;
-	int y_center;
-	int radius;
-};
-
-Circle* createCircle(int x, int y, int r)
-{
-	Circle* circle = (Circle*) malloc(sizeof(Circle));
-	circle->x_center = x;
-	circle->y_center = y;
-	circle->radius = r;
-	return circle;
-}
-
-void bfill8(int x,int y,COLORREF fcolor,COLORREF bcolor)
-{
-	COLORREF current;
-	current= GetPixel(x,y);
-	if(current != color_trans_map[bcolor] && current != color_trans_map[fcolor])
-	{
-		SetGraphicsColor(fcolor,1);
-		DrawPixel(x,y);
-		Sleep(1);
-		bfill8(x,y+1,fcolor,bcolor);
-		bfill8(x,y-1,fcolor,bcolor);
-		bfill8(x+1,y-1,fcolor,bcolor);
-		bfill8(x+1,y+1,fcolor,bcolor);
-		bfill8(x-1,y-1,fcolor,bcolor);
-		bfill8(x-1,y+1,fcolor,bcolor);
-		bfill8(x+1,y,fcolor,bcolor);
-		bfill8(x-1,y,fcolor,bcolor);
-	}
-}
-
-
 
 /****************************************************************************
 *  Set the X dimension of the current window in pixels.                 *
@@ -360,7 +318,7 @@ void DrawXorPixel(int x, int y)
 { 
 	unsigned int mask=0x00FFFFFF;
 
-	COLORREF cor = GetPixel(hdc,x,y);
+	COLORREF cor=GetPixel(hdc,x,y);
 
 	cor^=mask; // bit-bit Xor operation mask with color
 	SetPixel(hdc,x,y,cor);
@@ -1110,31 +1068,20 @@ void main()
 		{  // Example of elastic line
 			if (p1_x!=mouse_x || p1_y!=mouse_y)
 			{  // Erase previous line. NOTE: It can improved using XOR line
-				if(draw==1)
-				{
-					SetGraphicsColor((int)MY_BLACK,1);
-					DrawLine(p0_x,p0_y,p1_x,p1_y);
-					p1_x=mouse_x;
-					p1_y=mouse_y;  // Draw new line
-					SetGraphicsColor((int)MY_LIGHTGREEN,1);
-					DrawLine(p0_x,p0_y,p1_x,p1_y);
-				}
-				else
-				{
-					SetGraphicsColor((int)MY_BLACK,1);
-					DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
-					p1_x=mouse_x;
-					p1_y=mouse_y;
-					SetGraphicsColor((int)MY_LIGHTGREEN,1);
-					DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
-				}
+				SetGraphicsColor((int)MY_BLACK,1);
+				DrawLine(p0_x,p0_y,p1_x,p1_y);
+				p1_x=mouse_x;
+				p1_y=mouse_y;  // Draw new line
+				SetGraphicsColor((int)MY_LIGHTGREEN,1);
+				DrawLine(p0_x,p0_y,p1_x,p1_y);
+
 			}	 
 		}
 		else  if(mouse_action==L_MOUSE_UP)
 		{	
 			SetGraphicsColor(color,2);
 			if (draw==1){
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
+				DrawLine(p0_x,p0_y,p1_x,p1_y);//desenha a aresta
 				Vertex* final = createVertex(p1_x,p1_y);
 				current->next = final;
 				current = current->next;
@@ -1145,26 +1092,17 @@ void main()
 				if(firstPoint)
 					firstPoint = false;
 			}
-			else
-				DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
+			else DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
 			mouse_action=NO_ACTION;
 		}
 		else if (mouse_action==R_MOUSE_DOWN)
 		{
-			if(draw == 1)
-			{
-				Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);
-				current->next = final;
-				DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);
-				p->numLados++;
-				ListEdge *listaArestas = createListEdge(p->numLados);
-				FillPolygon(p,listaArestas);
-			}
-			else
-			{
-				Circle* circle = createCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
-				bfill8(circle->x_center, circle->y_center, MY_BLUE, MY_WHITE);
-			}
+			Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);
+			current->next = final;
+			DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);
+			p->numLados++;
+			ListEdge *listaArestas = createListEdge(p->numLados);
+			FillPolygon(p,listaArestas);
 			mouse_action=NO_ACTION;
 		}
 		
