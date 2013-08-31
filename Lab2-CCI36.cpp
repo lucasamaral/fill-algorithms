@@ -353,10 +353,26 @@ void floodFillCircle(int x, int y, COLORREF fcolor,COLORREF bcolor)
 		node = createVertex(x,y);
 	else
 		return;
-
+	enQueue(queue,node);
+	Vertex* n = unQueue(queue);
 	while(queue != NULL)
 	{
-		queue->head = node;
+		current= GetPixel(n->x,n->y);
+		if(current != color_trans_map[bcolor] && current != color_trans_map[fcolor])
+		{
+			SetGraphicsColor(fcolor,1);
+			DrawPixel(n->x,n->y);
+			Vertex* oeste = createVertex(n->x-1,n->y);
+			Vertex* leste = createVertex(n->x+1,n->y);
+			Vertex* norte = createVertex(n->x,n->y-1);
+			Vertex* sul = createVertex(n->x,n->y+1);
+			free(n);
+			enQueue(queue,oeste);
+			enQueue(queue,leste);
+			enQueue(queue,norte);
+			enQueue(queue,sul);
+		}
+		n = unQueue(queue);
 	}
 }
 
@@ -1152,13 +1168,24 @@ void main()
 		{  // Example of elastic line
 			if (p1_x!=mouse_x || p1_y!=mouse_y)
 			{  // Erase previous line. NOTE: It can improved using XOR line
-				SetGraphicsColor((int)MY_BLACK,1);
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
-				p1_x=mouse_x;
-				p1_y=mouse_y;  // Draw new line
-				SetGraphicsColor((int)MY_LIGHTGREEN,1);
-				DrawLine(p0_x,p0_y,p1_x,p1_y);
-
+				if(draw==1)
+				{
+					SetGraphicsColor((int)MY_BLACK,1);
+					DrawLine(p0_x,p0_y,p1_x,p1_y);
+					p1_x=mouse_x;
+					p1_y=mouse_y;  // Draw new line
+					SetGraphicsColor((int)MY_LIGHTGREEN,1);
+					DrawLine(p0_x,p0_y,p1_x,p1_y);
+				}
+				else
+				{
+					SetGraphicsColor((int)MY_BLACK,1);
+					DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
+					p1_x=mouse_x;
+					p1_y=mouse_y;
+					SetGraphicsColor((int)MY_LIGHTGREEN,1);
+					DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
+				} 
 			}	 
 		}
 		else  if(mouse_action==L_MOUSE_UP)
@@ -1176,20 +1203,28 @@ void main()
 				if(firstPoint)// testa se é o primeiro ponto desenhado
 					firstPoint = false;
 			}
-			else DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
+			else
+				DrawCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));	
 			mouse_action=NO_ACTION;
 		}
 		else if (mouse_action==R_MOUSE_DOWN)// clique no botão direito do mouse ao terminar a figura
 		{
-			Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);//último vértice desenhado
-			current->next = final;
-			DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);//  última aresta que completa a figura
-			p->numLados++; //aumenta o número de lados do pilígono
-			ListEdge *listaArestas = createListEdge(p->numLados);//cria a lista de arestas
-			FillPolygon(p,listaArestas);//preenche o polígono
-			mouse_action=NO_ACTION;
+			if(draw == 1)
+			{
+				Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);
+				current->next = final;
+				DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);
+				p->numLados++;
+				ListEdge *listaArestas = createListEdge(p->numLados);
+				FillPolygon(p,listaArestas);
+			}
+			else
+			{
+				Circle* circle = createCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
+				floodFillCircle(circle->x_center, circle->y_center, MY_BLUE, MY_WHITE);
+			} 
 		}
-		
+	
 	}
 	CloseGraphics();
 }
