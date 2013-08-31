@@ -117,7 +117,6 @@ ListEdge *createListEdge(int numArestas){
 	le->edges = (Edge*) malloc(numArestas * sizeof(Edge));
 	for (int i = 0; i < numArestas; i++)
 	{
-		/*le->edges[i] = (Edge*) malloc(sizeof(Edge));*/
 		le->edges[i].dx = 0;
 		le->edges[i].Xinter = 0;
 		le->edges[i].Ymax = 0;
@@ -135,12 +134,10 @@ Poligono *initPoligono(){//recebe o número de lados e retorna o poligno
 	Poligono* p = (Poligono*) malloc(sizeof(Poligono));
 	p->numLados = 0;
 	p->primeiro = NULL;
-	//p->arestas =(Edge**) malloc(n * sizeof(Edge));
 	return p;
 }
 
 void GetPoint(Poligono *p, int k, int* x, int* y) {
-	//Vertex* v = (Vertex*) malloc(sizeof(Vertex));
 	Vertex *head = p->primeiro;
 	for (int i = 0; i < k; i++)
 	{
@@ -162,9 +159,7 @@ void PolyInsert(ListEdge* list,int x1,int y1,int x2,int y2)
 		}
 
 		list->edges[J1].Ymax=YM;
-		printf("%d", list->edges[J1].Ymax);
 		list->edges[J1].dx = -1*(float)(x2-x1)/(y2-y1);
-		printf("%d", list->edges[J1].dx);
 		if (y1>y2)
 		{
 			list->edges[J1].Ymin=y2;
@@ -176,13 +171,12 @@ void PolyInsert(ListEdge* list,int x1,int y1,int x2,int y2)
 		}
 		list->numArestas++;
 	}
-
 }
 
-void LoadPolygon(Poligono* p, ListEdge* list, int* num_Edges)//revisar
+void LoadPolygon(Poligono* p, ListEdge* list, int* num_Edges)
 {
 	int x1,x2,y1,y2,k=1;
-	
+
 	list->numArestas = 0;
 	GetPoint(p, k, &x1, &y1);
 	*num_Edges = 0;
@@ -193,16 +187,12 @@ void LoadPolygon(Poligono* p, ListEdge* list, int* num_Edges)//revisar
 		if (y1==y2) x1 = x2 ;
 		else 
 		{
-			//list->edges[list->numArestas] == (Edge*) malloc(sizeof(Edge));
 			PolyInsert(list, x1,y1,x2,y2);
 			*num_Edges+=1;
-			printf("\n%d",list->edges[1].Ymax);
 			x1=x2;
 			y1=y2;
 		}
 	}
-
-
 } 
 
 void Include(ListEdge* list, int* end_Edge, int* final_Edge, int* scan)
@@ -219,24 +209,19 @@ void XSort( ListEdge* list, int start_Edge, int last_Edge)
 	bool sorted=false;
 	Edge* temp;
 	// Use bubble sort
-	
-    for ( k = start_Edge ; k < last_Edge; k++ )
-	{
-	  
-	   L = k + 1; 
-	  
-	   while ( L > start_Edge && 
-		   list->edges[L].Xinter < list->edges[L-1].Xinter )
-	   {
-		   temp=&list->edges[L];
-		   list->edges[L]=list->edges[L-1];
-		   list->edges[L-1]=*temp;
-		   L--;
-		 
-	   }
 
-   }
-	
+	for ( k = start_Edge ; k < last_Edge; k++ )
+	{
+		L = k + 1; 
+		while ( L > start_Edge && 
+			list->edges[L].Xinter < list->edges[L-1].Xinter )
+		{
+			temp=&list->edges[L];
+			list->edges[L]=list->edges[L-1];
+			list->edges[L-1]=*temp;
+			L--;
+		}
+	}
 } 
 
 void FillIn ( int x1 ,int x2 ,int  y )
@@ -262,11 +247,12 @@ void FillScan (ListEdge* list, int end_Edge , int start_Edge ,int scan )
 
 	for ( K = 1 ; K <= NX ; K++ )
 	{
-		FillIn ( (int)list->edges[J].Xinter, 
-			(int)list->edges[J+1].Xinter, scan);
-		J += 2;
+		/*if((int)list->edges[J].Xinter != (int)list->edges[J+1].Xinter)*/
+			FillIn ( (int)list->edges[J].Xinter, (int)list->edges[J+1].Xinter, scan);
+		/*else
+			FillIn ( (int)list->edges[J].Xinter, (int)list->edges[J+2].Xinter, scan);
+		J += 2;*/
 	}
-	
 }
 
 void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
@@ -288,7 +274,6 @@ void UpdateXValues(ListEdge* list, int last_Edge ,  int* start_Edge ,int* scan)
 		}
    }
 }
-
 	
 void FillPolygon ( Poligono* p,  ListEdge* list )
 {
@@ -311,7 +296,6 @@ void FillPolygon ( Poligono* p,  ListEdge* list )
 		UpdateXValues(list, end_Edge, &start_Edge, &scan);
 		Include(list, &end_Edge, &Edges, &scan);
 	}
-
 }
 
 
@@ -347,6 +331,7 @@ void DrawXorPixel(int x, int y)
 *  Caution!! GpiSetPel has been found to crash programs at some locations!  *
 ****************************************************************************/
 int count = 0;
+
 void DrawPixel(int x, int y)
 {
 	SetPixel(hdc, x,y,win_draw_color);
@@ -397,8 +382,6 @@ void MenuBar()
 	AppendMenu(menu_color,   MF_STRING,     16, (LPCTSTR)L"White");
 }
 
-
-
 /****************************************************************************
 *                                                                           *
 *  Name       :  InitGraphics()                                             *
@@ -410,9 +393,6 @@ void MenuBar()
 *                                                                           *                                                                           *
 *                                                                           *
 ****************************************************************************/
-
-
-
 
 wchar_t wind_class[]=L"Window Application";
 wchar_t wind_name[]= L"Lab2 CCI36";
@@ -497,8 +477,6 @@ void CloseGraphics(void)
 }
 
 
-
-
 /****************************************************************************
 *  Returns the X dimension of the current window in pixels.                 *
 ****************************************************************************/
@@ -541,8 +519,6 @@ void SetGraphicsColor(int new_color, int width)
 }
 
 
-
-
 /****************************************************************************
 *  Returns the color value of the pixel at the specified point on the       *
 *  screen.                                                                  *
@@ -551,8 +527,6 @@ int GetPixel(int x, int y)
 {
 	return (int)GetPixel(hdc, x,y);
 }
-
-
 
 void CheckGraphicsMsg(void)
 {  MSG msg;
@@ -757,7 +731,6 @@ void DrawLine(int x, int y, int x2, int y2)
         LineTo(hdc, x2,y2);	 
     }
 }
-
 
 /****************************************************************************
 *  Draw a ellipse on the screen.                                            *
@@ -1126,6 +1099,10 @@ void main()
 		}
 		else if (mouse_action==R_MOUSE_DOWN)
 		{
+			Vertex* final = createVertex(p->primeiro->x,p->primeiro->y);
+			current->next = final;
+			DrawLine(p->primeiro->x,p->primeiro->y,current->x,current->y);
+			p->numLados++;
 			ListEdge *listaArestas = createListEdge(p->numLados);
 			FillPolygon(p,listaArestas);
 			mouse_action=NO_ACTION;
