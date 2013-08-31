@@ -317,6 +317,49 @@ Circle* createCircle(int x, int y, int r)
 	return circle;
 }
 
+struct Queue {
+	Vertex *head;
+};
+
+Queue* createQueue()
+{
+	Queue *queue = (Queue*) malloc(sizeof(Queue));
+	queue->head = NULL;
+	return queue;
+}
+
+void enQueue(Queue *queue, Vertex *vert)
+{
+	Vertex* first = queue->head;
+	queue->head = vert;
+	vert->next = first;
+}
+
+Vertex* unQueue(Queue *queue)
+{
+	Vertex *first = queue->head;
+	queue->head = queue->head->next;
+	return first;
+}
+
+
+void floodFillCircle(int x, int y, COLORREF fcolor,COLORREF bcolor)
+{
+	COLORREF current;
+	Queue *queue = createQueue();
+	Vertex *node;
+	current= GetPixel(x,y);
+	if(current != color_trans_map[bcolor] && current != color_trans_map[fcolor])
+		node = createVertex(x,y);
+	else
+		return;
+
+	while(queue != NULL)
+	{
+		queue->head = node;
+	}
+}
+
 void bfill8(int x,int y,COLORREF fcolor,COLORREF bcolor)
 {
 	COLORREF current;
