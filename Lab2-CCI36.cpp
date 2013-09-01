@@ -317,28 +317,28 @@ Circle* createCircle(int x, int y, int r)
 	return circle;
 }
 
-struct Queue {
+struct Stack {
 	Vertex *head;
 };
 
-Queue* createQueue()
+Stack* createQueue()
 {
-	Queue *queue = (Queue*) malloc(sizeof(Queue));
-	queue->head = NULL;
-	return queue;
+	Stack *pilha = (Stack*) malloc(sizeof(Stack));
+	pilha->head = NULL;
+	return pilha;
 }
 
-void enQueue(Queue *queue, Vertex *vert)
+void emPilha(Stack *pilha, Vertex *vert)
 {
-	Vertex* first = queue->head;
-	queue->head = vert;
+	Vertex* first = pilha->head;
+	pilha->head = vert;
 	vert->next = first;
 }
 
-Vertex* unQueue(Queue *queue)
+Vertex* desemPilha(Stack *pilha)
 {
-	Vertex *first = queue->head;
-	queue->head = queue->head->next;
+	Vertex *first = pilha->head;
+	pilha->head = pilha->head->next;
 	return first;
 }
 
@@ -346,17 +346,20 @@ Vertex* unQueue(Queue *queue)
 void floodFillCircle(int x, int y, COLORREF fcolor,COLORREF bcolor)
 {
 	COLORREF current;
-	Queue *queue = createQueue();
+	Stack *queue = createQueue();
 	Vertex *node;
 	current= GetPixel(x,y);
 	if(current != color_trans_map[bcolor] && current != color_trans_map[fcolor])
 		node = createVertex(x,y);
 	else
 		return;
-	enQueue(queue,node);
-	Vertex* n = unQueue(queue);
-	while(queue != NULL)
+	emPilha(queue,node);
+	Vertex* n = desemPilha(queue);
+	boolean first = true;
+	while(queue->head != NULL || first)
 	{
+		if(first)
+			first = false;
 		current= GetPixel(n->x,n->y);
 		if(current != color_trans_map[bcolor] && current != color_trans_map[fcolor])
 		{
@@ -367,12 +370,12 @@ void floodFillCircle(int x, int y, COLORREF fcolor,COLORREF bcolor)
 			Vertex* norte = createVertex(n->x,n->y-1);
 			Vertex* sul = createVertex(n->x,n->y+1);
 			free(n);
-			enQueue(queue,oeste);
-			enQueue(queue,leste);
-			enQueue(queue,norte);
-			enQueue(queue,sul);
+			emPilha(queue,oeste);
+			emPilha(queue,leste);
+			emPilha(queue,norte);
+			emPilha(queue,sul);
 		}
-		n = unQueue(queue);
+		n = desemPilha(queue);
 	}
 }
 
@@ -384,7 +387,7 @@ void bfill8(int x,int y,COLORREF fcolor,COLORREF bcolor)
 	{
 		SetGraphicsColor(fcolor,1);
 		DrawPixel(x,y);
-		Sleep(1);
+		//Sleep(1);
 		bfill8(x,y+1,fcolor,bcolor);
 		bfill8(x,y-1,fcolor,bcolor);
 		bfill8(x+1,y-1,fcolor,bcolor);
@@ -1222,6 +1225,7 @@ void main()
 			{
 				Circle* circle = createCircle(p0_x,p0_y,sqrt((float)pow((float)(p1_x-p0_x),2)+pow((float)(p1_y-p0_y),2)));
 				floodFillCircle(circle->x_center, circle->y_center, MY_BLUE, MY_WHITE);
+				//bfill8(circle->x_center, circle->y_center, MY_BLUE, MY_WHITE);
 			} 
 		}
 	
